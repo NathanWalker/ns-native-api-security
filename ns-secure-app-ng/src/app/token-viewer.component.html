@@ -1,0 +1,23 @@
+<GridLayout rows="auto,*" class="p-4 bg-[#111827]">
+  <StackLayout class="mt-4">
+    <Button
+      text="Refresh List"
+      (tap)="onRefreshList()"
+      class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
+    ></Button>
+    <Button
+      text="Clear All"
+      (tap)="onClearAll()"
+      class="text-sm border border-gray-200 rounded-full p-2 text-red-500 mt-3"
+    ></Button>
+  </StackLayout>
+
+  <ListView row="1" [items]="tokenService.storedTokens()" class="mt-4 bg-[#111827]">
+    <ng-template let-item="item">
+        <GridLayout class="p-4 bg-[#111827]">
+            
+            <Label [text]="item" class="text-white"></Label>
+        </GridLayout>
+    </ng-template>
+  </ListView>
+</GridLayout>

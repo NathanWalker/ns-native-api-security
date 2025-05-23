@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure JWT Token Encryption</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3B82F6;
+      --primary-dark: #2563EB;
+      --secondary: #14B8A6;
+      --accent: #8B5CF6;
+      --warning: #FBBF24;
+      --error: #EF4444;
+      --success: #10B981;
+      --bg-dark: #111827;
+      --bg-card: #1F2937;
+      --text-light: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --border: #374151;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+
+    header p {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card h2 .step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      background-color: var(--primary);
+      color: white;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-light);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-light);
+    }
+
+    button.secondary:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    button.success {
+      background-color: var(--success);
+    }
+
+    button.warning {
+      background-color: var(--warning);
+      color: var(--bg-dark);
+    }
+
+    button.error {
+      background-color: var(--error);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .token-display {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 0.375rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+      word-break: break-all;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+
+    .token-display.encrypted {
+      color: var(--accent);
+    }
+
+    .token-display.decrypted {
+      color: var(--secondary);
+    }
+
+    .copy-button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 0.25rem;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      color: var(--text-muted);
+      padding: 0;
+    }
+
+    .copy-button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+    }
+
+    .status.success {
+      background-color: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .status.error {
+      background-color: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--error);
+    }
+
+    .status.warning {
+      background-color: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      color: var(--warning);
+    }
+
+    .status svg {
+      flex-shrink: 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .encryption-animation {
+      height: 4px;
+      width: 100%;
+      margin: 1rem 0;
+      background: linear-gradient(to right, var(--primary), var(--accent));
+      position: relative;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .encryption-animation::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 30%;
+      background: rgba(255, 255, 255, 0.3);
+      animation: encrypt 1.5s infinite;
+      border-radius: 2px;
+    }
+
+    @keyframes encrypt {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    .icon {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .storage-list {
+      list-style: none;
+      margin-top: 1rem;
+    }
+
+    .storage-item {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 0.375rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+    }
+
+    .storage-item:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .storage-item-name {
+      font-weight: 500;
+      margin-right: 1rem;
+    }
+
+    .storage-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .storage-item-actions button {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .info-text {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 3rem 2rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Secure JWT Token Encryption</h1>
+      <p>This app demonstrates how to generate encryption keys, encrypt JWT tokens, and store them securely in IndexedDB using the Web Crypto API.</p>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2><span class="step">1</span> Key Generation</h2>
+        <p>Generate a secure encryption key using Web Crypto API.</p>
+        <div class="form-group">
+          <label for="key-algorithm">Algorithm</label>
+          <select id="key-algorithm" class="form-select">
+            <option value="AES-GCM" selected>AES-GCM (Recommended)</option>
+            <option value="AES-CBC">AES-CBC</option>
+            <option value="AES-CTR">AES-CTR</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="key-length">Key Length</label>
+          <select id="key-length" class="form-select">
+            <option value="128">128 bits</option>
+            <option value="192">192 bits</option>
+            <option value="256" selected>256 bits (Recommended)</option>
+          </select>
+        </div>
+        <div class="button-group">
+          <button id="generate-key-btn" class="primary">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M15 7.5V7v0a4 4 0 1 0-4 4h4m-4 0h-2a4 4 0 0 0 0 8h1M9 11h6m0 0h1a4 4 0 1 1-4 4v-4"></path>
+            </svg>
+            Generate Key
+          </button>
+          <button id="export-key-btn" class="secondary" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+            </svg>
+            Export Key
+          </button>
+          <button id="import-key-btn" class="secondary">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+            </svg>
+            Import Key
+          </button>
+        </div>
+        <div id="key-status" class="status success hidden"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">2</span> JWT Token</h2>
+        <p>Enter your JWT token or generate a sample token.</p>
+        <div class="form-group">
+          <label for="jwt-token">JWT Token</label>
+          <textarea id="jwt-token" placeholder="Enter your JWT token here..."></textarea>
+        </div>
+        <div class="button-group">
+          <button id="generate-token-btn" class="secondary">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+              <rect x="2" y="9" width="4" height="12"></rect>
+              <circle cx="4" cy="4" r="2"></circle>
+            </svg>
+            Generate Sample
+          </button>
+          <button id="encrypt-token-btn" class="primary" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Encrypt Token
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">3</span> Encrypted Result</h2>
+        <p>View and decrypt your encrypted JWT token.</p>
+        <div id="encryption-animation" class="encryption-animation hidden"></div>
+        <div id="encrypted-token-display" class="token-display encrypted hidden">
+          <div>No encrypted token yet.</div>
+          <button class="copy-button" data-clipboard-target="#encrypted-token-display">
+            <svg class="icon" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="button-group">
+          <button id="decrypt-token-btn" class="secondary" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg>
+            Decrypt Token
+          </button>
+          <button id="store-token-btn" class="success" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Store in IndexedDB
+          </button>
+        </div>
+        <div id="encrypted-status" class="status hidden"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="step">4</span> Decrypted Token</h2>
+        <p>The original JWT token after decryption.</p>
+        <div id="decrypted-token-display" class="token-display decrypted hidden">
+          <div>No decrypted token yet.</div>
+          <button class="copy-button" data-clipboard-target="#decrypted-token-display">
+            <svg class="icon" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="decrypted-status" class="status hidden"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">5</span> IndexedDB Storage</h2>
+      <p>Manage your stored encrypted tokens in the browser's IndexedDB.</p>
+      <div id="db-status" class="status hidden"></div>
+      <div id="stored-tokens">
+        <div class="button-group">
+          <button id="refresh-tokens-btn" class="secondary">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M23 4v6h-6M1 20v-6h6"></path>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Refresh List
+          </button>
+          <button id="clear-all-btn" class="error">
+            <svg class="icon" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+            Clear All
+          </button>
+        </div>
+        <ul id="token-list" class="storage-list">
+          <li class="info-text">No tokens stored yet. Encrypt and store a token to see it here.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const generateKeyBtn = document.getElementById('generate-key-btn');
+    const exportKeyBtn = document.getElementById('export-key-btn');
+    const importKeyBtn = document.getElementById('import-key-btn');
+    const keyStatus = document.getElementById('key-status');
+    const jwtTokenInput = document.getElementById('jwt-token');
+    const generateTokenBtn = document.getElementById('generate-token-btn');
+    const encryptTokenBtn = document.getElementById('encrypt-token-btn');
+    const decryptTokenBtn = document.getElementById('decrypt-token-btn');
+    const storeTokenBtn = document.getElementById('store-token-btn');
+    const encryptionAnimation = document.getElementById('encryption-animation');
+    const encryptedTokenDisplay = document.getElementById('encrypted-token-display');
+    const decryptedTokenDisplay = document.getElementById('decrypted-token-display');
+    const encryptedStatus = document.getElementById('encrypted-status');
+    const decryptedStatus = document.getElementById('decrypted-status');
+    const dbStatus = document.getElementById('db-status');
+    const tokenList = document.getElementById('token-list');
+    const refreshTokensBtn = document.getElementById('refresh-tokens-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+    const algorithmSelect = document.getElementById('key-algorithm');
+    const keyLengthSelect = document.getElementById('key-length');
+
+    // Global state
+    let cryptoKey = null;
+    let encryptedToken = null;
+    let iv = null;
+    let db = null;
+
+    // IndexedDB setup
+    function initDatabase() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('JwtTokenStore', 1);
+        
+        request.onupgradeneeded = event => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('tokens')) {
+            const store = db.createObjectStore('tokens', { keyPath: 'id', autoIncrement: true });
+            store.createIndex('name', 'name', { unique: false });
+            store.createIndex('date', 'date', { unique: false });
+          }
+        };
+        
+        request.onsuccess = event => {
+          db = event.target.result;
+          showStatus(dbStatus, 'Database initialized successfully', 'success');
+          loadStoredTokens();
+          resolve(db);
+        };
+        
+        request.onerror = event => {
+          showStatus(dbStatus, `Database error: ${event.target.error}`, 'error');
+          reject(event.target.error);
+        };
+      });
+    }
+
+    // Generate encryption key
+    async function generateKey() {
+      try {
+        const algorithm = algorithmSelect.value;
+        const length = parseInt(keyLengthSelect.value);
+        
+        cryptoKey = await window.crypto.subtle.generateKey(
+          {
+            name: algorithm,
+            length: length
+          },
+          true, // extractable
+          ['encrypt', 'decrypt']
+        );
+        
+        exportKeyBtn.disabled = false;
+        encryptTokenBtn.disabled = false;
+        
+        showStatus(keyStatus, `${algorithm} ${length}-bit key generated successfully!`, 'success');
+        return cryptoKey;
+      } catch (error) {
+        showStatus(keyStatus, `Error generating key: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+
+    // Export the key as JWK
+    async function exportKey() {
+      if (!cryptoKey) {
+        showStatus(keyStatus, 'No key to export!', 'error');
+        return;
+      }
+      
+      try {
+        const exportedKey = await window.crypto.subtle.exportKey('jwk', cryptoKey);
+        const keyString = JSON.stringify(exportedKey);
+        
+        // Create a download link
+        const blob = new Blob([keyString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'encryption-key.jwk';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showStatus(keyStatus, 'Key exported successfully!', 'success');
+      } catch (error) {
+        showStatus(keyStatus, `Error exporting key: ${error.message}`, 'error');
+      }
+    }
+
+    // Import a key from JWK
+    async function importKey() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.jwk,application/json';
+      
+      input.onchange = async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+          const reader = new FileReader();
+          reader.onload = async e => {
+            try {
+              const jwkData = JSON.parse(e.target.result);
+              const algorithm = jwkData.alg || 'A256GCM';
+              
+              // Map JWK algorithm to Web Crypto algorithm
+              let webCryptoAlgo;
+              if (algorithm.includes('A128')) {
+                webCryptoAlgo = { name: jwkData.kty === 'oct' ? (jwkData.alg || 'AES-GCM') : jwkData.alg, length: 128 };
+              } else if (algorithm.includes('A192')) {
+                webCryptoAlgo = { name: jwkData.kty === 'oct' ? (jwkData.alg || 'AES-GCM') : jwkData.alg, length: 192 };
+              } else {
+                webCryptoAlgo = { name: jwkData.kty === 'oct' ? (jwkData.alg || 'AES-GCM') : jwkData.alg, length: 256 };
+              }
+              
+              cryptoKey = await window.crypto.subtle.importKey(
+                'jwk',
+                jwkData,
+                webCryptoAlgo,
+                true,
+                ['encrypt', 'decrypt']
+              );
+              
+              exportKeyBtn.disabled = false;
+              encryptTokenBtn.disabled = false;
+              
+              showStatus(keyStatus, 'Key imported successfully!', 'success');
+            } catch (error) {
+              showStatus(keyStatus, `Error parsing key file: ${error.message}`, 'error');
+            }
+          };
+          reader.readAsText(file);
+        } catch (error) {
+          showStatus(keyStatus, `Error reading key file: ${error.message}`, 'error');
+        }
+      };
+      
+      input.click();
+    }
+
+    // Generate a sample JWT token
+    function generateSampleToken() {
+      const header = {
+        alg: 'HS256',
+        typ: 'JWT'
+      };
+      
+      const payload = {
+        sub: '1234567890',
+        name: 'John Doe',
+        admin: true,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hour
+      };
+      
+      const base64Header = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      const base64Payload = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      
+      // In a real app, you'd create a valid signature, but for demo purposes:
+      const dummySignature = 'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      
+      const token = `${base64Header}.${base64Payload}.${dummySignature}`;
+      jwtTokenInput.value = token;
+      encryptTokenBtn.disabled = !cryptoKey;
+    }
+
+    // Encrypt the JWT token
+    async function encryptToken() {
+      const token = jwtTokenInput.value.trim();
+      if (!token) {
+        showStatus(encryptedStatus, 'Please enter a JWT token', 'warning');
+        return;
+      }
+      
+      if (!cryptoKey) {
+        showStatus(encryptedStatus, 'Please generate an encryption key first', 'warning');
+        return;
+      }
+      
+      try {
+        // Show encryption animation
+        encryptionAnimation.classList.remove('hidden');
+        
+        // Generate a random IV
+        iv = window.crypto.getRandomValues(new Uint8Array(12)); // 12 bytes for AES-GCM
+        
+        // Convert token to ArrayBuffer
+        const encoder = new TextEncoder();
+        const tokenData = encoder.encode(token);
+        
+        // Encrypt the token
+        const algorithm = algorithmSelect.value;
+        const encryptedData = await window.crypto.subtle.encrypt(
+          {
+            name: algorithm,
+            iv: iv
+          },
+          cryptoKey,
+          tokenData
+        );
+        
+        // Convert to base64 for display and storage
+        const ivBase64 = arrayBufferToBase64(iv);
+        const encryptedBase64 = arrayBufferToBase64(encryptedData);
+        
+        // Store both IV and encrypted data together
+        encryptedToken = JSON.stringify({
+          iv: ivBase64,
+          data: encryptedBase64,
+          algorithm: algorithm
+        });
+        
+        // Display the encrypted token
+        encryptedTokenDisplay.innerHTML = encryptedToken;
+        encryptedTokenDisplay.classList.remove('hidden');
+        
+        // Enable decrypt and store buttons
+        decryptTokenBtn.disabled = false;
+        storeTokenBtn.disabled = false;
+        
+        showStatus(encryptedStatus, 'Token encrypted successfully!', 'success');
+        
+        // Hide encryption animation after a delay
+        setTimeout(() => {
+          encryptionAnimation.classList.add('hidden');
+        }, 1500);
+      } catch (error) {
+        encryptionAnimation.classList.add('hidden');
+        showStatus(encryptedStatus, `Encryption error: ${error.message}`, 'error');
+      }
+    }
+
+    // Decrypt the token
+    async function decryptToken() {
+      if (!encryptedToken) {
+        showStatus(decryptedStatus, 'No encrypted token to decrypt', 'warning');
+        return;
+      }
+      
+      try {
+        // Parse the stored encrypted token
+        const encryptedObj = JSON.parse(encryptedToken);
+        const ivArrayBuffer = base64ToArrayBuffer(encryptedObj.iv);
+        const encryptedDataArrayBuffer = base64ToArrayBuffer(encryptedObj.data);
+        
+        // Decrypt the token
+        const algorithm = encryptedObj.algorithm || algorithmSelect.value;
+        const decryptedData = await window.crypto.subtle.decrypt(
+          {
+            name: algorithm,
+            iv: ivArrayBuffer
+          },
+          cryptoKey,
+          encryptedDataArrayBuffer
+        );
+        
+        // Convert back to string
+        const decoder = new TextDecoder();
+        const decryptedToken = decoder.decode(decryptedData);
+        
+        // Display the decrypted token
+        decryptedTokenDisplay.innerHTML = decryptedToken;
+        decryptedTokenDisplay.classList.remove('hidden');
+        
+        showStatus(decryptedStatus, 'Token decrypted successfully!', 'success');
+      } catch (error) {
+        showStatus(decryptedStatus, `Decryption error: ${error.message}`, 'error');
+      }
+    }
+
+    // Store the encrypted token in IndexedDB
+    async function storeToken() {
+      if (!encryptedToken) {
+        showStatus(dbStatus, 'No encrypted token to store', 'warning');
+        return;
+      }
+      
+      // Prompt for a name for the token
+      const name = prompt('Enter a name for this token:', `Token-${new Date().toISOString().slice(0, 10)}`);
+      if (!name) return;
+      
+      const transaction = db.transaction(['tokens'], 'readwrite');
+      const store = transaction.objectStore('tokens');
+      
+      const tokenRecord = {
+        name: name,
+        token: encryptedToken,
+        date: new Date().toISOString()
+      };
+      
+      const request = store.add(tokenRecord);
+      
+      request.onsuccess = () => {
+        showStatus(dbStatus, `Token "${name}" stored successfully!`, 'success');
+        loadStoredTokens();
+      };
+      
+      request.onerror = event => {
+        showStatus(dbStatus, `Error storing token: ${event.target.error}`, 'error');
+      };
+    }
+
+    // Load tokens from IndexedDB
+    function loadStoredTokens() {
+      if (!db) {
+        showStatus(dbStatus, 'Database not initialized', 'error');
+        return;
+      }
+      
+      const transaction = db.transaction(['tokens'], 'readonly');
+      const store = transaction.objectStore('tokens');
+      const request = store.getAll();
+      
+      request.onsuccess = () => {
+        const tokens = request.result;
+        
+        if (tokens.length === 0) {
+          tokenList.innerHTML = '<li class="info-text">No tokens stored yet. Encrypt and store a token to see it here.</li>';
+          return;
+        }
+        
+        // Sort tokens by date (newest first)
+        tokens.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        let html = '';
+        tokens.forEach(token => {
+          const date = new Date(token.date).toLocaleString();
+          html += `
+            <li class="storage-item fade-in" data-id="${token.id}">
+              <span class="storage-item-name">${token.name}</span>
+              <div class="storage-item-actions">
+                <button class="load-token-btn secondary" data-id="${token.id}">Load</button>
+                <button class="delete-token-btn error" data-id="${token.id}">
+                  <svg class="icon" viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </li>
+          `;
+        });
+        
+        tokenList.innerHTML = html;
+        
+        // Add event listeners to the new buttons
+        document.querySelectorAll('.load-token-btn').forEach(btn => {
+          btn.addEventListener('click', () => loadTokenById(btn.dataset.id));
+        });
+        
+        document.querySelectorAll('.delete-token-btn').forEach(btn => {
+          btn.addEventListener('click', () => deleteTokenById(btn.dataset.id));
+        });
+      };
+      
+      request.onerror = event => {
+        showStatus(dbStatus, `Error loading tokens: ${event.target.error}`, 'error');
+      };
+    }
+
+    // Load a token from IndexedDB by ID
+    async function loadTokenById(id) {
+      if (!db) return;
+      
+      const transaction = db.transaction(['tokens'], 'readonly');
+      const store = transaction.objectStore('tokens');
+      const request = store.get(parseInt(id));
+      
+      request.onsuccess = () => {
+        const tokenRecord = request.result;
+        if (!tokenRecord) {
+          showStatus(dbStatus, 'Token not found', 'error');
+          return;
+        }
+        
+        // Load the encrypted token
+        encryptedToken = tokenRecord.token;
+        encryptedTokenDisplay.innerHTML = encryptedToken;
+        encryptedTokenDisplay.classList.remove('hidden');
+        
+        // Enable decrypt button
+        decryptTokenBtn.disabled = false;
+        
+        showStatus(dbStatus, `Token "${tokenRecord.name}" loaded successfully!`, 'success');
+        
+        // Automatically scroll to the encrypted token section
+        document.querySelector('.card:nth-child(3)').scrollIntoView({ behavior: 'smooth' });
+      };
+      
+      request.onerror = event => {
+        showStatus(dbStatus, `Error loading token: ${event.target.error}`, 'error');
+      };
+    }
+
+    // Delete a token from IndexedDB by ID
+    function deleteTokenById(id) {
+      if (!confirm('Are you sure you want to delete this token?')) return;
+      
+      if (!db) return;
+      
+      const transaction = db.transaction(['tokens'], 'readwrite');
+      const store = transaction.objectStore('tokens');
+      const request = store.delete(parseInt(id));
+      
+      request.onsuccess = () => {
+        // Remove the item from the list
+        const item = document.querySelector(`.storage-item[data-id="${id}"]`);
+        if (item) {
+          item.classList.add('fade-out');
+          setTimeout(() => {
+            loadStoredTokens();
+          }, 300);
+        }
+        
+        showStatus(dbStatus, 'Token deleted successfully!', 'success');
+      };
+      
+      request.onerror = event => {
+        showStatus(dbStatus, `Error deleting token: ${event.target.error}`, 'error');
+      };
+    }
+
+    // Clear all tokens from IndexedDB
+    function clearAllTokens() {
+      if (!confirm('Are you sure you want to delete ALL stored tokens? This cannot be undone.')) return;
+      
+      if (!db) return;
+      
+      const transaction = db.transaction(['tokens'], 'readwrite');
+      const store = transaction.objectStore('tokens');
+      const request = store.clear();
+      
+      request.onsuccess = () => {
+        showStatus(dbStatus, 'All tokens cleared successfully!', 'success');
+        loadStoredTokens();
+      };
+      
+      request.onerror = event => {
+        showStatus(dbStatus, `Error clearing tokens: ${event.target.error}`, 'error');
+      };
+    }
+
+    // Utility function to show status messages
+    function showStatus(element, message, type) {
+      element.innerHTML = '';
+      let icon = '';
+      
+      if (type === 'success') {
+        icon = `<svg class="icon" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>`;
+      } else if (type === 'error') {
+        icon = `<svg class="icon" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>`;
+      } else if (type === 'warning') {
+        icon = `<svg class="icon" viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>`;
+      }
+      
+      element.innerHTML = icon + message;
+      element.className = `status ${type}`;
+      element.classList.remove('hidden');
+      
+      // Auto-hide success messages after 5 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          element.classList.add('hidden');
+        }, 5000);
+      }
+    }
+
+    // Utility functions for base64 conversion
+    function arrayBufferToBase64(buffer) {
+      const binary = String.fromCharCode.apply(null, new Uint8Array(buffer));
+      return btoa(binary);
+    }
+
+    function base64ToArrayBuffer(base64) {
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    }
+
+    // Copy button functionality
+    document.querySelectorAll('.copy-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.parentElement;
+        const text = target.innerText;
+        
+        navigator.clipboard.writeText(text).then(() => {
+          const originalHTML = button.innerHTML;
+          button.innerHTML = `
+            <svg class="icon" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          `;
+          setTimeout(() => {
+            button.innerHTML = originalHTML;
+          }, 1000);
+        });
+      });
+    });
+
+    // Event listeners
+    generateKeyBtn.addEventListener('click', generateKey);
+    exportKeyBtn.addEventListener('click', exportKey);
+    importKeyBtn.addEventListener('click', importKey);
+    generateTokenBtn.addEventListener('click', generateSampleToken);
+    encryptTokenBtn.addEventListener('click', encryptToken);
+    decryptTokenBtn.addEventListener('click', decryptToken);
+    storeTokenBtn.addEventListener('click', storeToken);
+    refreshTokensBtn.addEventListener('click', loadStoredTokens);
+    clearAllBtn.addEventListener('click', clearAllTokens);
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+    });
+  </script>
+</body>
+</html>

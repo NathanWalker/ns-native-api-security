@@ -1,0 +1,193 @@
+<ActionBar
+  title="Native API Security with NativeScript"
+  class="bg-[#111827] text-white"
+>
+</ActionBar>
+
+<!-- <GridLayout rows="*,auto,auto,*">
+  <Label row="1" text="Hello" class="text-3xl text-center"></Label>
+  <Button
+    row="2"
+    text="Setup Biometrics"
+    (tap)="biometricService.setupBiometric()"
+    class="mt-4"
+  ></Button>
+</GridLayout> -->
+
+<GridLayout rows="auto,auto,*,auto" class="px-2">
+  <!-- header -->
+  <StackLayout>
+    <Label
+      text="Secure JWT Token Encryption"
+      class="text-center font-bold text-[#8b5cf6] mt-2"
+      textWrap="true"
+    ></Label>
+    <Label
+      text="This app demonstrates how to generate encryption keys, encrypt JWT tokens, and store them securely in sqlite using the Web Crypto API."
+      class="text-sm text-[#9ca3af] text-center leading-[3] mt-1 mx-2"
+      textWrap="true"
+    ></Label>
+  </StackLayout>
+
+  <!-- 2×2 grid of steps -->
+  <ScrollView row="1">
+    <GridLayout rows="auto, auto" columns="*, *" class="mt-4">
+      <!-- Step 1: Key Generation -->
+      <StackLayout row="0" col="0" class="card mr-[2]">
+        <Label
+          text="1. Key Generation"
+          class="text-[#3b82f6] font-semibold text-sm"
+        ></Label>
+        <Label
+          text="Generate a secure encryption key using Web Crypto API."
+          textWrap="true"
+          class="text-white text-sm leading-[3] mt-1"
+        ></Label>
+
+        <StackLayout class="mt-2">
+          <Button
+            text="Generate Key"
+            (tap)="onGenerateKey()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
+          ></Button>
+
+          <Button
+            text="Export Key"
+            (tap)="canExportKey() && onExportKey()"
+            [isEnabled]="canExportKey()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
+          ></Button>
+        </StackLayout>
+      </StackLayout>
+
+      <!-- Step 2: JWT Token -->
+      <StackLayout row="0" col="1" class="card ml-[2]">
+        <Label
+          text="2. JWT Token"
+          class="text-[#3b82f6] font-semibold text-sm"
+        ></Label>
+        <Label
+          text="Enter your JWT token or generate a sample token."
+          class="text-white text-sm leading-[3] mt-1"
+          textWrap="true"
+        ></Label>
+
+        <StackLayout class="mt-1">
+          <TextView
+            [text]="jwtToken()"
+            hint="Enter JWT token here..."
+            class="rounded-md h-[50] text-gray-300 text-xs leading-[2]"
+            textWrap="true"
+          ></TextView>
+        </StackLayout>
+
+        <StackLayout class="mt-2">
+          <Button
+            text="Generate Sample"
+            (tap)="onGenerateSample()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
+          ></Button>
+
+          <Button
+            text="Encrypt Token"
+            (tap)="canEncrypt() && onEncryptToken()"
+            [isEnabled]="canEncrypt()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
+          ></Button>
+        </StackLayout>
+      </StackLayout>
+
+      <!-- Step 3: Encrypted Result -->
+      <StackLayout row="1" col="0" class="card mr-[2] mt-[2]">
+        <Label
+          text="3. Encrypted Result"
+          class="text-[#3b82f6] font-semibold text-sm"
+        ></Label>
+        <Label
+          text="View and decrypt your encrypted JWT token."
+          textWrap="true"
+          class="text-white text-sm leading-[3] mt-1"
+        ></Label>
+
+        @if (isEncrypting()) {
+        <ActivityIndicator [busy]="isEncrypting()" class="mt-2" />
+        } @if (encryptedToken()) {
+        <StackLayout class="mt-1">
+          <Label
+            [text]="encryptedToken()"
+            textWrap="true"
+            class="text-xs h-[50] text-gray-300 leading-[2]"
+          ></Label>
+        </StackLayout>
+        }
+
+        <StackLayout class="mt-2">
+          <Button
+            text="Decrypt Token"
+            (tap)="onDecryptToken()"
+            [isEnabled]="canDecrypt()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
+          ></Button>
+
+          <Button
+            text="Store in Sqlite"
+            (tap)="onStoreToken()"
+            [isEnabled]="canStore()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
+          ></Button>
+        </StackLayout>
+
+        @if (encryptedStatus()) {
+        <Label [text]="encryptedStatus()" class="status" marginTop="10"></Label>
+        }
+      </StackLayout>
+
+      <!-- Step 4: Decrypted Token -->
+      <StackLayout row="1" col="1" class="card ml-[2] mt-[2]">
+        <Label
+          text="4. Decrypted Token"
+          class="text-[#3b82f6] font-semibold text-sm"
+        ></Label>
+        <Label
+          text="The original JWT token after decryption."
+          textWrap="true"
+          class="text-white text-sm leading-[3] mt-1"
+        ></Label>
+
+        @if (decryptedToken()) {
+        <StackLayout class="mt-1">
+          <TextView
+            [text]="decryptedToken()"
+            class="rounded-md h-[50] text-gray-300 text-xs leading-[2]"
+            textWrap="true"
+          ></TextView>
+          <Button
+            text="Copy"
+            (tap)="onCopyDecrypted()"
+            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
+          ></Button>
+        </StackLayout>
+        }
+      </StackLayout>
+    </GridLayout>
+  </ScrollView>
+
+  <!-- Step 5: Sqlite Storage (full-width) -->
+  <StackLayout row="3" class="card my-2 border-t border-black">
+    <Label
+      text="5. Sqlite Storage"
+      class="text-[#3b82f6] font-semibold text-sm"
+    ></Label>
+    <Label
+      text="Manage your stored encrypted tokens in Sqlite."
+      textWrap="true"
+      class="text-white text-sm leading-[3] mt-1"
+    ></Label>
+
+    <Button
+      text="View Stored Tokens"
+      (tap)="onViewStoredTokens()"
+      class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-4"
+    ></Button>
+  </StackLayout>
+</GridLayout>
