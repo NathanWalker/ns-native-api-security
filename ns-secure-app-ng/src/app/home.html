@@ -1,76 +1,77 @@
-<ActionBar
-  title="Native API Security with NativeScript"
-  class="bg-[#111827] text-white"
->
-</ActionBar>
+<ActionBar [title]="title()" class="bg-[#111827] text-white"> </ActionBar>
 
-<!-- <GridLayout rows="*,auto,auto,*">
-  <Label row="1" text="Hello" class="text-3xl text-center"></Label>
-  <Button
-    row="2"
-    text="Setup Biometrics"
-    (tap)="biometricService.setupBiometric()"
-    class="mt-4"
-  ></Button>
-</GridLayout> -->
-
-<GridLayout rows="auto,auto,*,auto" class="px-2">
-  <!-- header -->
+<GridLayout rows="auto,*,auto">
   <StackLayout>
-    <Label
+    <label
       text="Secure JWT Token Encryption"
       class="text-center font-bold text-[#8b5cf6] mt-2"
       textWrap="true"
-    ></Label>
-    <Label
-      text="This app demonstrates how to generate encryption keys, encrypt JWT tokens, and store them securely in sqlite using the Web Crypto API."
+    ></label>
+    <label
+      text="This app demonstrates how to generate encryption keys, encrypt JWT tokens, and store them securely using the Web Crypto API."
       class="text-sm text-[#9ca3af] text-center leading-[3] mt-1 mx-2"
       textWrap="true"
-    ></Label>
+    ></label>
+    <GridLayout rows="auto" columns="*,auto,auto" class="mt-1">
+      <label
+        col="1"
+        text="Use Biometrics:"
+        class="text-sm text-[#9ca3af] text-center leading-[3] mt-1 mx-2"
+      ></label>
+      <Switch
+        col="2"
+        (checkedChange)="onBiometricSwitchChange($event)"
+        [checked]="isBiometricEnabled()"
+      ></Switch>
+    </GridLayout>
+    <GridLayout rows="auto" columns="*,auto,auto" class="mt-1">
+      <label
+        col="1"
+        text="Use Secure Storage:"
+        class="text-sm text-[#9ca3af] text-center leading-[3] mt-1 mx-2"
+      ></label>
+      <Switch
+        col="2"
+        (checkedChange)="onSecureStorageSwitchChange($event)"
+        [checked]="biometric.isSecureStorageEnabled()"
+      ></Switch>
+    </GridLayout>
   </StackLayout>
 
-  <!-- 2×2 grid of steps -->
   <ScrollView row="1">
-    <GridLayout rows="auto, auto" columns="*, *" class="mt-4">
+    <GridLayout rows="auto, auto" columns="*, *" class="mt-4 px-2">
       <!-- Step 1: Key Generation -->
       <StackLayout row="0" col="0" class="card mr-[2]">
-        <Label
+        <label
           text="1. Key Generation"
           class="text-[#3b82f6] font-semibold text-sm"
-        ></Label>
-        <Label
+        ></label>
+        <label
           text="Generate a secure encryption key using Web Crypto API."
           textWrap="true"
           class="text-white text-sm leading-[3] mt-1"
-        ></Label>
+        ></label>
 
         <StackLayout class="mt-2">
-          <Button
+          <button
             text="Generate Key"
             (tap)="onGenerateKey()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
-          ></Button>
-
-          <Button
-            text="Export Key"
-            (tap)="canExportKey() && onExportKey()"
-            [isEnabled]="canExportKey()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
-          ></Button>
+            class="text-sm border border-black rounded-full p-2 text-blue-500"
+          ></button>
         </StackLayout>
       </StackLayout>
 
       <!-- Step 2: JWT Token -->
       <StackLayout row="0" col="1" class="card ml-[2]">
-        <Label
+        <label
           text="2. JWT Token"
           class="text-[#3b82f6] font-semibold text-sm"
-        ></Label>
-        <Label
+        ></label>
+        <label
           text="Enter your JWT token or generate a sample token."
           class="text-white text-sm leading-[3] mt-1"
           textWrap="true"
-        ></Label>
+        ></label>
 
         <StackLayout class="mt-1">
           <TextView
@@ -82,77 +83,77 @@
         </StackLayout>
 
         <StackLayout class="mt-2">
-          <Button
+          <button
             text="Generate Sample"
             (tap)="onGenerateSample()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
-          ></Button>
+            class="text-sm border border-black rounded-full p-2 text-blue-500"
+          ></button>
 
-          <Button
+          <button
             text="Encrypt Token"
             (tap)="canEncrypt() && onEncryptToken()"
             [isEnabled]="canEncrypt()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
-          ></Button>
+            class="text-sm border border-black rounded-full p-2 text-blue-500 mt-2"
+          ></button>
         </StackLayout>
       </StackLayout>
 
       <!-- Step 3: Encrypted Result -->
-      <StackLayout row="1" col="0" class="card mr-[2] mt-[2]">
-        <Label
+      <StackLayout row="1" col="0" class="card mr-[2] mt-1">
+        <label
           text="3. Encrypted Result"
           class="text-[#3b82f6] font-semibold text-sm"
-        ></Label>
-        <Label
+        ></label>
+        <label
           text="View and decrypt your encrypted JWT token."
           textWrap="true"
           class="text-white text-sm leading-[3] mt-1"
-        ></Label>
+        ></label>
 
         @if (isEncrypting()) {
         <ActivityIndicator [busy]="isEncrypting()" class="mt-2" />
         } @if (encryptedToken()) {
         <StackLayout class="mt-1">
-          <Label
+          <TextView
             [text]="encryptedToken()"
+            class="rounded-md h-[50] text-gray-300 text-xs leading-[2]"
             textWrap="true"
-            class="text-xs h-[50] text-gray-300 leading-[2]"
-          ></Label>
+          ></TextView>
         </StackLayout>
         }
 
         <StackLayout class="mt-2">
-          <Button
+          <button
             text="Decrypt Token"
             (tap)="onDecryptToken()"
             [isEnabled]="canDecrypt()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500"
-          ></Button>
+            class="text-sm border border-black rounded-full p-2 text-blue-500"
+          ></button>
 
-          <Button
-            text="Store in Sqlite"
-            (tap)="onStoreToken()"
+          <button
+            [text]="storeTokenButtonText()"
+            (tap)="canStore() && onStoreToken()"
             [isEnabled]="canStore()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
-          ></Button>
+            class="text-sm border border-black rounded-full p-2 text-blue-500 mt-2"
+          ></button>
         </StackLayout>
 
         @if (encryptedStatus()) {
-        <Label [text]="encryptedStatus()" class="status" marginTop="10"></Label>
+        <label [text]="encryptedStatus()" class="status" marginTop="10"></label>
         }
       </StackLayout>
 
       <!-- Step 4: Decrypted Token -->
-      <StackLayout row="1" col="1" class="card ml-[2] mt-[2]">
-        <Label
+      <StackLayout row="1" col="1" class="card ml-[2] mt-1">
+        <label
           text="4. Decrypted Token"
           class="text-[#3b82f6] font-semibold text-sm"
-        ></Label>
-        <Label
+        ></label>
+        <label
           text="The original JWT token after decryption."
           textWrap="true"
           class="text-white text-sm leading-[3] mt-1"
-        ></Label>
+        ></label>
 
         @if (decryptedToken()) {
         <StackLayout class="mt-1">
@@ -161,33 +162,47 @@
             class="rounded-md h-[50] text-gray-300 text-xs leading-[2]"
             textWrap="true"
           ></TextView>
-          <Button
+          <button
             text="Copy"
             (tap)="onCopyDecrypted()"
-            class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-2"
-          ></Button>
+            class="text-sm border border-black rounded-full p-2 text-blue-500 mt-2"
+          ></button>
         </StackLayout>
         }
       </StackLayout>
     </GridLayout>
   </ScrollView>
 
-  <!-- Step 5: Sqlite Storage (full-width) -->
-  <StackLayout row="3" class="card my-2 border-t border-black">
-    <Label
+  @if (biometric.isSecureStorageEnabled()) {
+  <StackLayout row="2" class="bg-[#1f2937] p-3 border-t border-black">
+    <label
+      text="🔐 Secure Hardware-Backed Enclave"
+      class="text-[#3b82f6] font-semibold text-sm"
+    ></label>
+
+    <button
+      text="View Secure Enclave Keys"
+      (tap)="onViewSecureEnclaveTokens()"
+      class="text-sm border border-black rounded-full p-2 text-blue-500 mt-6"
+    ></button>
+  </StackLayout>
+  } @else {
+  <StackLayout row="2" class="bg-[#1f2937] p-3 border-t border-black">
+    <label
       text="5. Sqlite Storage"
       class="text-[#3b82f6] font-semibold text-sm"
-    ></Label>
-    <Label
+    ></label>
+    <label
       text="Manage your stored encrypted tokens in Sqlite."
       textWrap="true"
       class="text-white text-sm leading-[3] mt-1"
-    ></Label>
+    ></label>
 
-    <Button
-      text="View Stored Tokens"
+    <button
+      [text]="viewStoredTokensButtonText()"
       (tap)="onViewStoredTokens()"
-      class="text-sm border border-gray-200 rounded-full p-2 text-blue-500 mt-4"
-    ></Button>
+      class="text-sm border border-black rounded-full p-2 text-blue-500 mt-4"
+    ></button>
   </StackLayout>
+  }
 </GridLayout>

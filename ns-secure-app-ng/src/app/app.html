@@ -1,0 +1,9 @@
+<GridLayout>
+  <page-router-outlet></page-router-outlet>
+
+  @if (showLock()) {
+  <GridLayout class="bg-black h-full w-full" opacity="0.9">
+    <RiveView src="~/assets/lock.riv" class="w-full" autoPlay="true" />
+  </GridLayout>
+  }
+</GridLayout>

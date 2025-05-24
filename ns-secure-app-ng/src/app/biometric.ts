@@ -15,9 +15,11 @@ type BiometricOptions = {
 @Injectable({
   providedIn: "root",
 })
-export class BiometricService {
+export class Biometric {
   options = signal<BiometricOptions>({});
   biometricLock = signal(true);
+  isSecureStorageEnabled = signal(false);
+  isStoredSecurely = signal(false);
   private _secureStorage: SecureStorage;
   private _biometricAuth: BiometricAuth;
 
@@ -29,6 +31,28 @@ export class BiometricService {
     this._initBiometricHandler();
   }
 
+  storeTokens(data) {
+    this._secureStorage.set({
+      key: "tokens",
+      value: JSON.stringify(data),
+    });
+    this.isStoredSecurely.set(true);
+  }
+
+  async getSecureStoredTokens(): Promise<{ id: string; token: string }[]> {
+    const data = await this._secureStorage.get({
+      key: "tokens",
+    });
+    if (data) {
+      try {
+        return JSON.parse(data) as { id: string; token: string }[];
+      } catch (err) {
+        return [];
+      }
+    }
+    return [];
+  }
+
   verifyBiometric() {
     return new Promise<void>((resolve, reject) => {
       const options = this.options();
@@ -37,25 +61,20 @@ export class BiometricService {
           .verifyBiometric({
             title: "Authenticate",
             message: `Verify your identity to access your account.`,
-            pinFallback: global.isAndroid ? false : true,
-            // useCustomAndroidUI: false, // TODO:
+            pinFallback: __ANDROID__ ? false : true,
           })
           .then(
             () => {
               console.log("biometric unlock!");
-
-              //   this.passcodeRequired = false;
-              //   this.biometricCanceled = false;
               this.biometricLock.set(false);
               resolve();
             },
             (err) => {
-              //   this.biometricCanceled = true;
               reject(err);
             }
           );
       } else {
-        // TODO: may want to show passcode modal in this case
+        // Note: could show custom passcode modal in this case
         this.biometricLock.set(false);
         resolve();
       }
@@ -65,26 +84,20 @@ export class BiometricService {
   promptToUseBiometric() {
     return new Promise<void>((resolve) => {
       if (this.options().available) {
-        const askUser = (type: "Face" | "Touch") => {
-          // ask user if they want biometric
-          // allow in flight navigation to settle before prompting
-          setTimeout(() => {
-            // temporarily show security cover while asking
-            this.biometricLock.set(true);
+        setTimeout(() => {
+          // temporarily show security cover while asking
+          this.biometricLock.set(true);
 
-            this.verifyBiometric().then(
-              () => {
-                resolve();
-              },
-              () => {
-                // failed to authorize
-                resolve();
-              }
-            );
-          }, 600);
-        };
-
-        askUser("Face");
+          this.verifyBiometric().then(
+            () => {
+              resolve();
+            },
+            () => {
+              // failed to authorize
+              resolve();
+            }
+          );
+        }, 600);
       } else {
         resolve();
       }
@@ -92,6 +105,9 @@ export class BiometricService {
   }
 
   private _initBiometricHandler() {
+    if (this._biometricAuth) {
+      return;
+    }
     this._biometricAuth = new BiometricAuth();
     this._biometricAuth.available().then(
       (result: BiometricIDAvailableResult) => {
@@ -104,6 +120,7 @@ export class BiometricService {
               touch: result.touch,
               face: result.face,
             });
+            this.promptToUseBiometric();
           }
         }
       },

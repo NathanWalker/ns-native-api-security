@@ -399,7 +399,7 @@
             </svg>
             Generate Key
           </button>
-          <button id="export-key-btn" class="secondary" disabled>
+          <!-- <button id="export-key-btn" class="secondary" disabled>
             <svg class="icon" viewBox="0 0 24 24">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
             </svg>
@@ -410,7 +410,7 @@
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
             </svg>
             Import Key
-          </button>
+          </button> -->
         </div>
         <div id="key-status" class="status success hidden"></div>
       </div>
@@ -523,8 +523,8 @@
   <script>
     // DOM Elements
     const generateKeyBtn = document.getElementById('generate-key-btn');
-    const exportKeyBtn = document.getElementById('export-key-btn');
-    const importKeyBtn = document.getElementById('import-key-btn');
+    //const exportKeyBtn = document.getElementById('export-key-btn');
+    //const importKeyBtn = document.getElementById('import-key-btn');
     const keyStatus = document.getElementById('key-status');
     const jwtTokenInput = document.getElementById('jwt-token');
     const generateTokenBtn = document.getElementById('generate-token-btn');
@@ -592,7 +592,7 @@
           ['encrypt', 'decrypt']
         );
         
-        exportKeyBtn.disabled = false;
+        // exportKeyBtn.disabled = false;
         encryptTokenBtn.disabled = false;
         
         showStatus(keyStatus, `${algorithm} ${length}-bit key generated successfully!`, 'success');
@@ -666,7 +666,7 @@
                 ['encrypt', 'decrypt']
               );
               
-              exportKeyBtn.disabled = false;
+              // exportKeyBtn.disabled = false;
               encryptTokenBtn.disabled = false;
               
               showStatus(keyStatus, 'Key imported successfully!', 'success');
@@ -1059,8 +1059,8 @@
 
     // Event listeners
     generateKeyBtn.addEventListener('click', generateKey);
-    exportKeyBtn.addEventListener('click', exportKey);
-    importKeyBtn.addEventListener('click', importKey);
+    // exportKeyBtn.addEventListener('click', exportKey);
+    // importKeyBtn.addEventListener('click', importKey);
     generateTokenBtn.addEventListener('click', generateSampleToken);
     encryptTokenBtn.addEventListener('click', encryptToken);
     decryptTokenBtn.addEventListener('click', decryptToken);

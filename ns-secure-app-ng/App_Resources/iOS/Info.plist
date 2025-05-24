@@ -44,6 +44,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSFaceIDUsageDescription</key>
-    <string>Secure storage access using Face ID.</string>
+    <string>Use biometrics for added security.</string>
 </dict>
 </plist>
